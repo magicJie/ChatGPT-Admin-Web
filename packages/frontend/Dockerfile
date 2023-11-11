@@ -17,6 +17,10 @@ RUN apk add --no-cache libc6-compat \
   && apk update \
   && pnpm add turbo -g \
   && pnpx turbo prune --scope=frontend --docker
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5dc17c (fix: docker构建问题处理)
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -33,7 +37,11 @@ RUN pnpm install
 COPY ./config.yaml /app/config.yaml
 COPY --from=builder /app/out/full/ .
 RUN pnpx turbo run db:generate \
+<<<<<<< HEAD
     && pnpx turbo run build
+=======
+    && pnpx turbo run build --filter=frontend...
+>>>>>>> e5dc17c (fix: docker构建问题处理)
 
 FROM base AS runner
 
