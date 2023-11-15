@@ -14,10 +14,9 @@ WORKDIR /app
 COPY . .
 
 RUN apk add --no-cache libc6-compat \
-  & apk update \
-  & pnpm add turbo -g \
-  & pnpx turbo prune --scope=chat --docker
-
+  && apk update \
+  && pnpm add turbo -g \
+  && pnpx turbo prune --scope=frontend --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -34,7 +33,7 @@ RUN pnpm install
 COPY ./config.yaml /app/config.yaml
 COPY --from=builder /app/out/full/ .
 RUN pnpx turbo run db:generate \
-    & pnpx turbo run build --filter=chat...
+    && pnpx turbo run build
 
 FROM base AS runner
 
@@ -57,4 +56,4 @@ COPY --from=installer --chown=nextjs:nodejs /app/packages/frontend/.next/standal
 COPY --from=installer --chown=nextjs:nodejs /app/packages/frontend/.next/static ./packages/frontend/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/packages/frontend/public ./packages/frontend/public
 
-CMD node packages/frontend/server.js
+CMD node /app/packages/frontend/server.js

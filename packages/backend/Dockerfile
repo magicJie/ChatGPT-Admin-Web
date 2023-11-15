@@ -15,15 +15,15 @@ COPY . .
 
 
 RUN apk add --no-cache libc6-compat \
-  & apk update \
-  & pnpm add turbo -g \
-  & pnpx turbo prune --scope=server --docker
+  && apk update \
+  && pnpm add turbo -g \
+  && pnpx turbo prune --scope=backend --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
 
 RUN apk add --no-cache libc6-compat \
-  & apk update
+  && apk update
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ COPY --from=builder /app/out/full/ .
 COPY --from=builder /app/packages/backend/run.sh ./packages/backend/run.sh
 
 RUN pnpx turbo run db:generate \
-  & pnpx turbo run build
+  && pnpx turbo run build
 
 WORKDIR /app/packages/backend
 

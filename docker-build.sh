@@ -1,0 +1,2 @@
+sudo nerdctl build . -f packages/frontend/Dockerfile -t swr.lan.aiminjie.com/amj/chatgpt-admin-web-fronted:v1.0 --build-arg https_proxy=http://10.0.1.116:20171
+sudo nerdctl build . -f packages/backend/Dockerfile -t swr.lan.aiminjie.com/amj/chatgpt-admin-web-backend:v1.0 --build-arg https_proxy=http://10.0.1.116:20171
