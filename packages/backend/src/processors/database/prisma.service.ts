@@ -1,7 +1,8 @@
 import { CustomPrismaClientFactory } from 'nestjs-prisma';
 
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+
+import { ConfigService } from '@/common/config';
 
 import {
   type ExtendedPrismaClient,
@@ -15,7 +16,7 @@ export class ExtendedPrismaConfigService
   private readonly url: string;
 
   constructor(configService: ConfigService) {
-    this.url = configService.getOrThrow('postgres').url;
+    this.url = configService?.get('postgres')?.url ?? process.env.DATABASE_URL;
   }
 
   createPrismaClient(): ExtendedPrismaClient {

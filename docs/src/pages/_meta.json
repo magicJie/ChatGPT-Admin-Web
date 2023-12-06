@@ -1,12 +1,18 @@
 {
   "index": "主页",
-  "start": "开始",
-  "config": "配置",
-  "faq": "常见问题",
-  "development": "开发",
-  "upgrade": "升级",
+  "install": "安装",
+  "upgrade": {
+    "title": "升级"
+  },
+  "development": {
+    "title": "开发"
+  },
+  "-- More": {
+    "type": "separator",
+    "title": "More"
+  },
   "github_link": {
-    "title": "Github",
+    "title": "Github ↗",
     "href": "https://github.com/AprilNEA/ChatGPT-Admin-Web",
     "newWindow": true
   }

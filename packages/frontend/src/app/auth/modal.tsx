@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { useState } from 'react';
 
 import styles from '@/app/auth/auth.module.scss';
@@ -68,7 +69,10 @@ export function SetUsernameAndPassword(props: { onClose: () => void }) {
           disabled={isSubmitting}
           onClick={() => handleSubmit(undefined, setup)}
           text={Locales.Auth.Submit}
-          className={styles['auth-submit-btn']}
+          className={clsx(
+            styles['auth-submit-btn'],
+            styles['forceauth-button'],
+          )}
           type="primary"
         />
       </div>

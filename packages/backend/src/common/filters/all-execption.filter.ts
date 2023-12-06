@@ -4,9 +4,10 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
-  HttpException,
   HttpStatus,
 } from '@nestjs/common';
+
+import { ErrorCodeEnum } from 'shared/dist/error-code';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
@@ -20,14 +21,17 @@ export class AllExceptionFilter implements ExceptionFilter {
     }
 
     const code =
-      (exception as any)?.response?.code || HttpStatus.INTERNAL_SERVER_ERROR;
+      (exception as any)?.response?.code || ErrorCodeEnum.UnknownError;
+
+    const statusCode =
+      (exception as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
       (exception as any)?.response?.message ||
       (exception as any)?.message ||
       'Unknown Error';
 
-    response.status(400).type('application/json').send({
+    response.status(statusCode).type('application/json').send({
       success: false,
       code,
       message,

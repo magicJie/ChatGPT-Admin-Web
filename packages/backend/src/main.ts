@@ -1,12 +1,14 @@
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { fastifyApp } from '@/common/adapter/fastify.adapter';
+import { ConfigService } from '@/common/config';
 import { AllExceptionFilter } from '@/common/filters/all-execption.filter';
 import { PrismaExceptionFilter } from '@/common/filters/prisma-client-execption';
 
 import { AppModule } from './app.module';
+
+require('dotenv').config();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
