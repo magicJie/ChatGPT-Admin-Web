@@ -3,22 +3,7 @@ import { join } from 'path';
 
 import { Injectable } from '@nestjs/common';
 
-import { BizException } from '@/common/exceptions/biz.exception';
-
 import { ConfigType, ISettingSchema } from 'shared';
-import { ErrorCodeEnum } from 'shared/dist/error-code';
-
-const DEFAULT_CONFIG = {
-  mode: 'nginx',
-  title: 'ChatGPT Admin Web',
-  port: {
-    frontend: 3000,
-    backend: 3001,
-  },
-  jwt: {
-    algorithm: 'HS256',
-  },
-};
 
 const CONFIG_SCHEMA: ISettingSchema[] = [
   {
@@ -82,7 +67,6 @@ const CONFIG_SCHEMA: ISettingSchema[] = [
 @Injectable()
 export class ConfigService {
   private config: ConfigType;
-  private readonly defaultConfig = DEFAULT_CONFIG;
   private readonly configFilePath = join(__dirname, '../../../config.json');
 
   constructor() {
@@ -90,7 +74,11 @@ export class ConfigService {
   }
 
   private loadConfig(): void {
-    this.config = JSON.parse(fs.readFileSync(this.configFilePath, 'utf8'));
+    if (fs.existsSync(this.configFilePath)) {
+      this.config = JSON.parse(fs.readFileSync(this.configFilePath, 'utf8'));
+    } else {
+      console.error('配置文件缺失。\nConfiguration file is missing.');
+    }
   }
 
   /* 获取配置文件结构 */
@@ -112,5 +100,27 @@ export class ConfigService {
     const jsonData = JSON.stringify(newConfig, null, 2);
     fs.writeFileSync(this.configFilePath, jsonData, 'utf8');
     this.loadConfig();
+  }
+
+  checkEmailEnable() {
+    return (
+      this.get('email') &&
+      this.get('email').use &&
+      this.get('email').use !== 'disable'
+    );
+  }
+
+  checkSMSEnable() {
+    return (
+      this.get('sms') &&
+      this.get('sms').use &&
+      this.get('sms').use !== 'disable'
+    );
+  }
+
+  checkNotifierEnable(all = false) {
+    return all
+      ? this.checkEmailEnable() && this.checkSMSEnable()
+      : this.checkEmailEnable() || this.checkSMSEnable();
   }
 }

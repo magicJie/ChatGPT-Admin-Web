@@ -1,9 +1,35 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "REDIS_URL"
+  ],
   "pipeline": {
     "db:generate": {
       "dependsOn": [
         "^db:generate"
+      ],
+      "outputs": [
+        ".client/**"
+      ]
+    },
+    "frontend#build": {
+      "inputs": ["config.json"],
+      "dependsOn": [
+        "shared#build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "backend#build": {
+      "dependsOn": [
+        "db:generate",
+        "shared#build"
+      ],
+      "outputs": [
+        "dist/**"
       ]
     },
     "build": {
@@ -13,18 +39,16 @@
       ],
       "outputs": [
         "dist/**",
-        "client/**",
         ".next/**",
         "!.next/cache/**"
       ]
     },
-    "test": {
-      "dependsOn": [
-        "^test"
-      ]
+    "//#test": {
+      "dependsOn": []
     },
     "start": {
       "dependsOn": [
+        "build",
         "^start"
       ]
     },

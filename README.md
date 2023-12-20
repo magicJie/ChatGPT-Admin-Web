@@ -15,7 +15,7 @@ English</a></h4>
     <a href="https://github.com/AprilNEA/ChatGPT-Admin-Web/issues?q=is%3Aissue+is%3Aclosed" target="_blank">
     <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed/AprilNEA/ChatGPT-Admin-Web.svg?style=flat-square"></a>
 <br/>    
-<img src="https://hits-app.vercel.app/hits?url=https%3A%2F%2Fgithub.com%2FAprilNEA%2FChatGPT-Admin-Web" />
+<img src="https://hits.siyue.best/v1/hits?url=https://github.com/AprilNEA/ChatGPT-Admin-Web&bgRight=000&bgLeft=000&border=square" />
 
 </div>
 <div align="left">CAW 是一个自托管网络应用程序，提供开箱即用的用户管理，包括后台界面以及可配置的支付计划和相关支付界面。</div>
@@ -35,12 +35,12 @@ English</a></h4>
 
 |                                                                           |                                                                           |
 |---------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| <img src=https://s2.loli.net/2023/11/10/53Q4ZodyIhvmaHt.png width="500"/> |  |
+| <img src=https://s2.loli.net/2023/11/10/53Q4ZodyIhvmaHt.png width="500"/> |                                                                           |
 | <img src=https://s2.loli.net/2023/11/10/KoieRB9jnTxgCuz.png width="500"/> | <img src=https://s2.loli.net/2023/11/10/kI8z2auXcnFGwTe.png width="500"/> |
 
 ## 开始
 
-配置及安装请查看[文档](https://caw.sku.moe)
+配置及安装请查看[文档](https://manual.sku.moe/project/chatgpt-admin-web)
 
 ## 版本
 
@@ -49,6 +49,18 @@ English</a></h4>
 | [V3](https://github.com/AprilNEA/ChatGPT-Admin-Web/tree/v3)   | 长期支持 | 使用全新的技术栈重构      |
 | [V2](https://github.com/AprilNEA/ChatGPT-Admin-Web/tree/v2)   | 弃用   | 存在设计缺陷          |
 | [V1](https://github.com/AprilNEA/ChatGPT-Admin-Web/tree/main) | 不再更新 | Redis数据库，可拓展性较差 |
+
+[更新日志](https://manual.sku.moe/project/chatgpt-admin-web/update-log)
+
+## 技术栈
+
+| Part     | Tech               |
+|:---------|:-------------------|
+| Frontend | Next.js            |
+| Backend  | Nest.js            |
+| Database | PostgreSQL & Redis |
+
+更多技术细节：[开发手册](https://manual.sku.moe/project/chatgpt-admin-web/development)。
 
 ## 项目动态
 
@@ -61,7 +73,6 @@ English</a></h4>
 <a href="https://github.com/AprilNEA/ChatGPT-Admin-Web/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=AprilNEA/ChatGPT-Admin-Web" />
 </a>
-
 
 ## 捐赠
 

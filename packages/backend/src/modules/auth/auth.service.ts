@@ -14,7 +14,7 @@ import { SmsService } from '@/libs/sms/sms.service';
 import { ExtendedPrismaClient } from '@/processors/database/prisma.extension';
 
 import { IAccountStatus } from 'shared';
-import { ErrorCodeEnum } from 'shared/dist/error-code';
+import { ErrorCodeEnum } from 'shared';
 
 type ByPassword = {
   identity: string;
@@ -62,18 +62,19 @@ export class AuthService {
    * 1. 检查是否绑定账户
    * 2. 检查是否设置密码
    */
-  async #signWithCheck(user: any): Promise<{
-    token: string;
-    status: IAccountStatus;
-  }> {
+  async #signWithCheck(user: any) {
     let status: IAccountStatus = 'ok';
     if (!user.email && !user.phone) {
       status = 'bind';
-    } else if (!user.password) {
+    } else if (!user.newPassword) {
       status = 'password';
     }
     return {
-      token: await this.jwt.sign({ id: user.id, role: user.role }),
+      sessionToken: await this.jwt.sign({ id: user.id, role: user.role }),
+      refreshToken: await this.jwt.sign(
+        { id: user.id, role: user.role },
+        30 * 24 * 60 * 60,
+      ),
       status,
     };
   }
@@ -86,6 +87,38 @@ export class AuthService {
     } else {
       await this.redis.del(identity);
     }
+  }
+
+  async #register({
+    identity,
+    password,
+  }: {
+    identity: string;
+    password?: string;
+  }) {
+    const { email, phone } = getPhoneOrEmail(identity);
+
+    const existUser = await this.prisma.client.user.findMany({
+      where: {
+        OR: [{ email }, { phone }],
+      },
+    });
+
+    let user;
+    if (existUser.length != 1) {
+      // 注册用户
+      user = await this.prisma.client.user.create({
+        data: {
+          email: email,
+          phone: phone,
+          role: Role.User,
+          password: password ? hashSync(password, SALT_ROUNDS) : undefined,
+        },
+      });
+    } else {
+      user = existUser[0];
+    }
+    return this.#signWithCheck(user);
   }
 
   /* 添加验证码 */
@@ -109,10 +142,17 @@ export class AuthService {
       await this.redis.setex(identity, newTtl, code);
 
       if (email) {
+        if (!this.emailService.status()) {
+          throw new BizException(ErrorCodeEnum.EmailNotSetup);
+        }
         await this.emailService.sendCode(identity, code);
       } else if (phone) {
+        if (!this.smsService.status()) {
+          throw new BizException(ErrorCodeEnum.SmsNotSetup);
+        }
         await this.smsService.sendCode(identity, code);
       }
+
       return {
         success: true,
         ttl: newTtl,
@@ -120,32 +160,18 @@ export class AuthService {
     }
   }
 
+  /* Only used when email and sms service both disabled */
+  registerPassword(data: ByPassword) {
+    return this.#register(data);
+  }
+
   /* 通过验证码登录/注册 */
-  async WithValidateCode(identity: string, code: string) {
+  async withValidateCode(identity: string, code: string) {
     const { email, phone } = getPhoneOrEmail(identity);
 
     await this.#verifyCode(identity, code);
 
-    const existUser = await this.prisma.client.user.findMany({
-      where: {
-        OR: [{ email }, { phone }],
-      },
-    });
-
-    let user;
-    if (existUser.length != 1) {
-      // 注册用户
-      user = await this.prisma.client.user.create({
-        data: {
-          email: email,
-          phone: phone,
-          role: Role.User,
-        },
-      });
-    } else {
-      user = existUser[0];
-    }
-    return this.#signWithCheck(user);
+    return this.#register({ identity });
   }
 
   /* 通过密码登录 */
@@ -158,11 +184,11 @@ export class AuthService {
       },
     });
     if (user.length != 1) {
-      throw Error('User does not exist');
+      throw new BizException(ErrorCodeEnum.UserNotExist);
     }
     const isPasswordCorrect = await compare(password, user[0].password);
     if (!isPasswordCorrect) {
-      throw Error('Password is incorrect');
+      throw new BizException(ErrorCodeEnum.PasswordError);
     }
     return this.#signWithCheck(user[0]);
   }
@@ -208,14 +234,35 @@ export class AuthService {
     }
   }
 
-  /* 修改密码 */
-  async changePassword(userId: number, password: string) {
+  /* Utils to change user password
+   * old password will be checked when old password is passed
+   */
+  async changePassword({
+    userId,
+    newPassword,
+    oldPassword,
+  }: {
+    userId: number;
+    newPassword: string;
+    oldPassword?: string;
+  }) {
+    if (oldPassword) {
+      const user = await this.prisma.client.user.findUniqueOrThrow({
+        where: {
+          id: userId,
+        },
+      });
+      const isPasswordCorrect = await compare(oldPassword, user.password);
+      if (!isPasswordCorrect) {
+        throw new BizException(ErrorCodeEnum.PasswordError);
+      }
+    }
     await this.prisma.client.user.update({
       where: {
         id: userId,
       },
       data: {
-        password: hashSync(password, SALT_ROUNDS),
+        password: hashSync(newPassword, SALT_ROUNDS),
       },
     });
   }
@@ -238,7 +285,7 @@ export class AuthService {
     } else {
       user = existUser[0];
     }
-    await this.changePassword(user.id, password);
+    await this.changePassword({ userId: user.id, newPassword: password });
 
     return this.#signWithCheck(user);
   }
@@ -292,7 +339,12 @@ export class AuthService {
         role: Role.Admin,
         email,
         phone,
+        password: hashSync(password, SALT_ROUNDS),
       },
     });
+  }
+
+  async refresh(userId: number, userRole: string) {
+    return this.#signWithCheck({ id: userId, role: userRole });
   }
 }

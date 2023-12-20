@@ -10,18 +10,11 @@ import useInstallStore from '@/store/install';
 import styles from '@/styles/module/radix-ui-lib.module.scss';
 
 import {
-  ISettingResult,
   ISettingSchema,
   MultiInputSettingSchema,
   SelectSettingSchema,
   TypeSettingSchema,
 } from 'shared';
-
-export function OptionListRoot(props: {
-  children: JSX.Element | JSX.Element[];
-}) {
-  return <div className={styles['option-list-root']}>{props.children}</div>;
-}
 
 /* 开关选项 */
 function SwitchItem(props: {

@@ -2,12 +2,12 @@
 
 import clsx from 'clsx';
 import Link from 'next/link';
-import Router from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import useSWR from 'swr';
 
-import { SetUsernameAndPassword } from '@/app/auth/modal';
+import { SetPassword } from '@/app/auth/modal';
 import { ChatList } from '@/components/chat/chat-list';
 import { Loading } from '@/components/loading';
 import { Markdown } from '@/components/markdown';
@@ -21,9 +21,9 @@ import ChatGptIcon from '@/icons/chatgpt.svg';
 import CheckMarkIcon from '@/icons/checkmark.svg';
 import FileChatIcon from '@/icons/file-chat.svg';
 import LogoutIcon from '@/icons/logout.svg';
-import MaskIcon from '@/icons/mask.svg';
 import MoreIcon from '@/icons/more.svg';
 import PersonIcon from '@/icons/person.svg';
+import PluginIcon from '@/icons/plugin.svg';
 import PremiumIcon from '@/icons/premium.svg';
 import SettingsIcon from '@/icons/settings.svg';
 import UserIcon from '@/icons/user.svg';
@@ -101,21 +101,23 @@ function bindPassword() {
       onClose={closeModal}
       className={styles['force-auth-modal']}
     >
-      <SetUsernameAndPassword onClose={closeModal} />
+      <SetPassword onClose={closeModal} />
     </Modal>,
   );
 }
 
 export function Sidebar({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const {
-    setSessionToken,
+    fetcher,
+    clearAuthToken,
     showSideBar,
     setShowSideBar,
-    fetcher,
     latestAnnouncementId,
     setLatestAnnouncementId,
     config,
   } = useStore();
+  // componentState
   const [newbtnExpanded, setNewbtnExpanded] = useState<boolean>(false);
   const [morebtnExpanded, setMorebtnExpanded] = useState<boolean>(false);
 
@@ -133,6 +135,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
         }
       }),
   );
+
   const { data: userData, isLoading: isUserDataLoading } = useSWR<IUserData>(
     '/user/info',
     (url) =>
@@ -159,6 +162,11 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       revalidateOnFocus: false,
     },
   );
+
+  function logout() {
+    clearAuthToken();
+    router.push('/auth');
+  }
 
   const loading = !useHasHydrated();
 
@@ -229,24 +237,25 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                   </div>
                 </button>
               </Link>
-              <button
-                className={styles['sidebar-new']}
-                style={{ display: 'none' }}
-              >
-                <div>
-                  <div className={styles['icon']}>
-                    <FileChatIcon />
-                  </div>
-                  <div className={styles['text']}>{Locale.Home.FileChat}</div>
-                </div>
-              </button>
+
               <button className={styles['sidebar-new']}>
-                <div>
-                  <div className={styles['icon']}>
-                    <MaskIcon />
+                <Link
+                  href="/plugin"
+                  onClick={() => {
+                    setShowSideBar(false);
+                    setNewbtnExpanded(false);
+                    setMorebtnExpanded(false);
+                  }}
+                  className={styles['link-full']}
+                  style={{ color: 'inherit', textDecoration: 'inherit' }}
+                >
+                  <div>
+                    <div className={styles['icon']}>
+                      <PluginIcon />
+                    </div>
+                    <div className={styles['text']}>{Locale.Home.Plugin}</div>
                   </div>
-                  <div className={styles['text']}>{Locale.Home.Mask}</div>
-                </div>
+                </Link>
               </button>
             </>
           )}
@@ -328,13 +337,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
               </Link>
               <div
                 className={styles['sidebar-account-ext-item']}
-                onClick={() => {
-                  setSessionToken(undefined);
-                  setShowSideBar(false);
-                  setNewbtnExpanded(false);
-                  setMorebtnExpanded(false);
-                  Router.reload();
-                }}
+                onClick={logout}
               >
                 <div className={styles['icon']}>
                   <LogoutIcon />
